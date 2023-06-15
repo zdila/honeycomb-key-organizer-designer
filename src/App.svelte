@@ -15,6 +15,7 @@
   import Textfield from "@smui/textfield";
   import Paper from "@smui/paper";
   import Fab, { Icon } from "@smui/fab";
+  import { transforms } from "@jscad/modeling";
 
   // let model = Array(20)
   //   .fill()
@@ -44,6 +45,11 @@
   $: {
     if (active === "Preview") {
       previewModel = makeModel();
+
+      previewModel = transforms.rotateZ(
+        Math.PI,
+        transforms.center({}, previewModel)
+      );
     }
   }
 
