@@ -27,10 +27,40 @@
 
   let model = demoModel;
 
-  $: value = JSON.stringify(model);
+  let active = "Design";
+
+  let selected = "vacant";
+
+  let cellSize = 17.3;
+
+  let cellSpacing = 4.5;
+
+  let height = 22;
+
+  let radius = 1.5;
+
+  let kc1x = 90.8;
+  let kc1y = 120;
+  let kc2x = 246.5;
+  let kc2y = 120;
+
+  const choices = ["clear", "hole", "vacant", "occupied"];
+
+  $: value = JSON.stringify({
+    model,
+    cellSize,
+    cellSpacing,
+    height,
+    radius,
+    kc1x,
+    kc1y,
+    kc2x,
+    kc2y,
+  });
 
   function handleChange(e) {
-    model = JSON.parse(e.target.value);
+    ({ model, cellSize, cellSpacing, height, radius, kc1x, kc1y, kc2x, kc2y } =
+      JSON.parse(e.target.value));
   }
 
   function download() {
@@ -68,25 +98,6 @@
         : undefined
     );
   }
-
-  let active = "Design";
-
-  let selected = "vacant";
-
-  let cellSize = 17.3;
-
-  let cellSpacing = 4.5;
-
-  let height = 22;
-
-  let radius = 1.5;
-
-  let kc1x = 90.8;
-  let kc1y = 120;
-  let kc2x = 246.5;
-  let kc2y = 120;
-
-  const choices = ["clear", "hole", "vacant", "occupied"];
 </script>
 
 <Fab
