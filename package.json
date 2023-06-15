@@ -1,0 +1,38 @@
+{
+  "name": "honeycomb-keyholder-designer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@jscad/modeling": "2.11.0",
+    "@jscad/regl-renderer": "2.6.5",
+    "@jscad/stl-serializer": "2.1.13",
+    "@smui/button": "^7.0.0-beta.8",
+    "@smui/fab": "^7.0.0-beta.8",
+    "@smui/paper": "^7.0.0-beta.8",
+    "@smui/segmented-button": "^7.0.0-beta.8",
+    "@smui/tab": "^7.0.0-beta.8",
+    "@smui/tab-bar": "^7.0.0-beta.8",
+    "@smui/textfield": "^7.0.0-beta.8",
+    "@sveltejs/vite-plugin-svelte": "^2.0.4",
+    "@tsconfig/svelte": "^4.0.1",
+    "@types/file-saver": "^2.0.5",
+    "file-saver": "2.0.5",
+    "sass": "^1.63.4",
+    "svelte": "^3.58.0",
+    "svelte-check": "^3.3.1",
+    "tslib": "^2.5.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.3.9"
+  },
+  "dependencies": {
+    "@material/typography": "^14.0.0",
+    "svelte-material-ui": "^7.0.0-beta.8"
+  }
+}
