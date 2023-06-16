@@ -16,7 +16,7 @@
   import { transforms } from "@jscad/modeling";
   import Button, { Label as ButtonLabel } from "@smui/button";
 
-  let model: number[][] = structuredClone(models.small);
+  let model: number[][] = structuredClone(models.small.model);
 
   let active = "About";
 
@@ -69,7 +69,7 @@
       keyholeHorizontalOffset = keyholeHorizontalOffset,
       keyholeVerticalSpace = keyholeVerticalSpace,
       keyholeVerticalOffset = keyholeVerticalOffset,
-    } = data);
+    } = structuredClone(data));
   }
 
   function loadFromString(data: any) {
