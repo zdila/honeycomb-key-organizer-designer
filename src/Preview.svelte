@@ -17,11 +17,12 @@
 
   const perspectiveCamera = cameras.perspective;
 
+
   const orbitControls = controls.orbit;
 
   const state = {
     controls: orbitControls.defaults,
-    camera: { ...perspectiveCamera.defaults },
+    camera: { ...perspectiveCamera.defaults, position: [0, 0, 400] },
   };
 
   $: options = {
@@ -130,7 +131,9 @@
     let pointerDown = false;
 
     const moveHandler = (ev: PointerEvent) => {
-      if (!pointerDown) return;
+      if (!pointerDown) {
+        return;
+      }
 
       const dx = lastX - ev.pageX;
       const dy = ev.pageY - lastY;
@@ -139,7 +142,7 @@
         ev.shiftKey === true ||
         ((ev as any).touches && (ev as any).touches.length > 2);
 
-      if (shiftKey) {
+      if (shiftKey || ev.buttons == 2) {
         panDelta[0] += dx;
         panDelta[1] += dy;
       } else {
@@ -174,6 +177,9 @@
     containerElement.onpointerdown = downHandler;
     containerElement.onpointerup = upHandler;
     containerElement.onwheel = wheelHandler;
+    containerElement.oncontextmenu = (ev) => {
+      ev.preventDefault();
+    };
 
     let rafId: number | undefined;
 

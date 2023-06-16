@@ -4,7 +4,7 @@
   import stlSerializer from "@jscad/stl-serializer";
   import { saveAs } from "file-saver";
 
-  import { demoModel } from "./demo-model";
+  import * as models from "./demo-model";
   import { honeycomb } from "./honeycomb.js";
   import type { Geom3 } from "@jscad/modeling/src/geometries/types";
 
@@ -13,9 +13,11 @@
   import SegmentedButton, { Segment } from "@smui/segmented-button";
   import { Label } from "@smui/common";
   import Textfield from "@smui/textfield";
+  import HelperText from "@smui/textfield/helper-text";
   import Paper from "@smui/paper";
   import Fab, { Icon } from "@smui/fab";
   import { transforms } from "@jscad/modeling";
+  import Button, { Label as ButtonLabel } from '@smui/button';
 
   // let model = Array(20)
   //   .fill()
@@ -25,7 +27,7 @@
   //       .map(() => 0)
   //   );
 
-  let model = demoModel;
+  let model: number[][] = structuredClone(models.small);
 
   let active = "Design";
 
@@ -33,7 +35,7 @@
 
   let cellSize = 17.3;
 
-  let cellSpacing = 4.5;
+  let wallWidth = 4.5;
 
   let height = 22;
 
@@ -49,7 +51,7 @@
   $: value = JSON.stringify({
     model,
     cellSize,
-    cellSpacing,
+    wallWidth,
     height,
     radius,
     kc1x,
@@ -59,7 +61,7 @@
   });
 
   function handleChange(e) {
-    ({ model, cellSize, cellSpacing, height, radius, kc1x, kc1y, kc2x, kc2y } =
+    ({ model, cellSize, wallWidth, height, radius, kc1x, kc1y, kc2x, kc2y } =
       JSON.parse(e.target.value));
   }
 
@@ -87,7 +89,7 @@
     return honeycomb(
       model,
       cellSize,
-      cellSpacing,
+      wallWidth,
       height,
       radius,
       kc1x && kc1y && kc2x && kc2y
@@ -97,6 +99,12 @@
           ]
         : undefined
     );
+  }
+
+  function loadModel(template: number[][]) {
+    return () => {
+      model = structuredClone(template);
+    }
   }
 </script>
 
@@ -144,10 +152,10 @@
     <Textfield label="Cell size" type="number" min="0" bind:value={cellSize} />
 
     <Textfield
-      label="Cell spacing"
+      label="Wall width"
       type="number"
       min="0"
-      bind:value={cellSpacing}
+      bind:value={wallWidth}
     />
 
     <Textfield label="Height" type="number" min="0" bind:value={height} />
@@ -171,15 +179,30 @@
 {:else if active === "Load/Save"}
   <Paper variant="unelevated" style=" height: 100%">
     <Textfield
-      style="width: 100%; height: 100%"
-      input$style="width: 100%; height: 100%"
+      style="width: 100%"
+      input$style="width: 100%"
       class="save-area"
       textarea
       {value}
       on:input={handleChange}
       label="State"
       input$resizable={false}
-    />
+      input$rows={6}
+    >
+      <HelperText slot="helper">Copy/paste to save/load the state</HelperText>
+    </Textfield>
+
+    <div class="mdc-typography--subtitle1" style="margin-top: 1rem">
+      Load model
+    </div>
+
+    <Button><ButtonLabel on:click={loadModel(models.clear)}>Clear</ButtonLabel></Button>
+
+    <Button><ButtonLabel on:click={loadModel(models.small)}>Small</ButtonLabel></Button>
+
+    <Button><ButtonLabel on:click={loadModel(models.big)}>Big</ButtonLabel></Button>
+
+    <Button><ButtonLabel on:click={loadModel(models.sun)}>Sun</ButtonLabel></Button>
   </Paper>
 {/if}
 
@@ -195,12 +218,7 @@
     overflow: auto;
   }
 
-  :global(.save-area) {
-    height: 100%;
-  }
-
   :global(.save-area > span) {
     width: 100%;
-    height: calc(100% - 32px);
   }
 </style>
