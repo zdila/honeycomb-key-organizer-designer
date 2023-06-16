@@ -7,7 +7,7 @@
   import * as models from "./demo-model";
   import { honeycomb } from "./honeycomb.js";
   import type { Geom3 } from "@jscad/modeling/src/geometries/types";
-  import Tab, { Label as TabLabel } from "@smui/tab";
+  import Tab, { Label, Label as TabLabel } from "@smui/tab";
   import TabBar from "@smui/tab-bar";
   import Textfield from "@smui/textfield";
   import HelperText from "@smui/textfield/helper-text";
@@ -30,7 +30,11 @@
 
   let inset = 1;
 
-  let keyholeHorizontalDistanceOffset = 0;
+  let keyholeHorizontalSpace = 50;
+
+  let keyholeHorizontalOffset = 0;
+
+  let keyholeVerticalSpace = 0;
 
   let keyholeVerticalOffset = 0;
 
@@ -41,7 +45,9 @@
     height,
     radius,
     inset,
-    keyholeHorizontalDistanceOffset,
+    keyholeHorizontalSpace,
+    keyholeHorizontalOffset,
+    keyholeVerticalSpace,
     keyholeVerticalOffset,
   });
 
@@ -49,27 +55,33 @@
     localStorage.setItem("state", value);
   }
 
-  load(localStorage.getItem("state"));
+  loadFromString(localStorage.getItem("state"));
 
-  function load(data: any) {
+  function loadFromObject(data: models.State) {
+    ({
+      model = model,
+      cellSize = cellSize,
+      wallWidth = wallWidth,
+      height = height,
+      radius = radius,
+      inset = inset,
+      keyholeHorizontalSpace = keyholeHorizontalSpace,
+      keyholeHorizontalOffset = keyholeHorizontalOffset,
+      keyholeVerticalSpace = keyholeVerticalSpace,
+      keyholeVerticalOffset = keyholeVerticalOffset,
+    } = data);
+  }
+
+  function loadFromString(data: any) {
     try {
-      ({
-        model,
-        cellSize,
-        wallWidth,
-        height,
-        radius,
-        inset,
-        keyholeHorizontalDistanceOffset,
-        keyholeVerticalOffset,
-      } = JSON.parse(data));
+      loadFromObject(JSON.parse(data));
     } catch {
       // ignore
     }
   }
 
   function handleChange(e: CustomEvent) {
-    load((e.target as HTMLTextAreaElement).value);
+    loadFromString((e.target as HTMLTextAreaElement).value);
   }
 
   function download() {
@@ -100,14 +112,16 @@
       height,
       radius,
       inset,
-      keyholeHorizontalDistanceOffset,
+      keyholeHorizontalSpace,
+      keyholeHorizontalOffset,
+      keyholeVerticalSpace,
       keyholeVerticalOffset
     );
   }
 
-  function loadModel(template: number[][]) {
+  function loadModel(template: models.State) {
     return () => {
-      model = structuredClone(template);
+      loadFromObject(structuredClone(template) as models.State);
     };
   }
 </script>
@@ -156,14 +170,34 @@
 
     <Textfield label="Cap inset" type="number" min="0" bind:value={inset} />
 
+    <div class="wrap" />
+
+    <div class="mdc-typography--body1 wrap">Wall mount holes</div>
+
     <Textfield
-      label="Wall mount holes horiz. dist. offset"
+      label="Horizontal space"
       type="number"
-      bind:value={keyholeHorizontalDistanceOffset}
+      bind:value={keyholeHorizontalSpace}
+    >
+      <Icon class="material-icons" slot="trailingIcon">percent</Icon>
+    </Textfield>
+
+    <Textfield
+      label="Horizontal offset"
+      type="number"
+      bind:value={keyholeHorizontalOffset}
     />
 
     <Textfield
-      label="Wall mount holes vertical offset"
+      label="Vertical space"
+      type="number"
+      bind:value={keyholeVerticalSpace}
+    >
+      <Icon class="material-icons" slot="trailingIcon">percent</Icon>
+    </Textfield>
+
+    <Textfield
+      label="Vertical offset"
       type="number"
       bind:value={keyholeVerticalOffset}
     />
@@ -181,7 +215,7 @@
       on:input={handleChange}
       label="State"
       input$resizable={false}
-      input$rows={6}
+      input$rows={8}
     >
       <HelperText slot="helper">Copy/paste to save/load the state</HelperText>
     </Textfield>
@@ -189,10 +223,6 @@
     <div class="mdc-typography--subtitle1" style="margin-top: 1rem">
       Load predefined model
     </div>
-
-    <Button>
-      <ButtonLabel on:click={loadModel(models.clear)}>Clear</ButtonLabel>
-    </Button>
 
     <Button>
       <ButtonLabel on:click={loadModel(models.small)}>Small</ButtonLabel>
@@ -203,7 +233,7 @@
     </Button>
 
     <Button>
-      <ButtonLabel on:click={loadModel(models.sun)}>Sun</ButtonLabel>
+      <ButtonLabel on:click={loadModel(models.snake)}>Snake</ButtonLabel>
     </Button>
   </Paper>
 {/if}
@@ -217,5 +247,9 @@
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
+  }
+
+  .wrap {
+    flex-basis: 100%;
   }
 </style>

@@ -148,7 +148,9 @@ export function honeycomb(
   height: number,
   radius: number,
   inset: number,
-  keyholeHorizontalDistanceOffset: number,
+  keyholeHorizontalSpace: number,
+  keyholeHorizontalOffset: number,
+  keyholeVerticalSpace: number,
   keyholeVerticalOffset: number
 ) {
   const parts: Geom3[] = [];
@@ -198,42 +200,42 @@ export function honeycomb(
   let k2: Geom3 | undefined = undefined;
   let holes: Geom3 | undefined = undefined;
 
-  if (!isNaN(keyholeVerticalOffset)) {
-    const d =
-      (bbox[1][0] - bbox[0][0]) / 4 - keyholeHorizontalDistanceOffset / 2;
+  if (
+    [
+      keyholeHorizontalSpace,
+      keyholeHorizontalOffset,
+      keyholeVerticalSpace,
+      keyholeVerticalOffset,
+    ].every((v) => !isNaN(v))
+  ) {
+    const dx =
+      ((bbox[1][0] - bbox[0][0]) * (50 - keyholeHorizontalSpace / 2)) / 100;
 
-    const x1 = isNaN(keyholeHorizontalDistanceOffset)
-      ? (bbox[0][0] + bbox[1][0]) / 2
-      : bbox[0][0] + d;
+    const x1 = bbox[0][0] + dx + keyholeHorizontalOffset;
 
-    const x2 = isNaN(keyholeHorizontalDistanceOffset)
-      ? undefined
-      : bbox[1][0] - d;
+    const x2 = bbox[1][0] - dx + keyholeHorizontalOffset;
 
-    const y = (bbox[0][1] + bbox[1][1]) / 2 + keyholeVerticalOffset;
+    const dy =
+      ((bbox[1][1] - bbox[0][1]) * (50 - keyholeVerticalSpace / 2)) / 100;
 
-    k1 = translate([x1, y, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
+    const y1 = bbox[0][1] + dy + keyholeVerticalOffset;
 
-    k2 =
-      x2 === undefined
-        ? undefined
-        : translate([x2, y, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
+    const y2 = bbox[1][1] - dy + keyholeVerticalOffset;
 
-    const h1 = translate([x1, y, h / 2], scale([0.5, 0.5, 1], keyhole()));
+    k1 = translate([x1, y1 + 5.5, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
 
-    holes =
-      x2 === undefined
-        ? h1
-        : union(h1, translate([x2, y, h / 2], scale([0.5, 0.5, 1], keyhole())));
+    k2 = translate([x2, y2 + 5.5, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
+
+    holes = union(
+      translate([x1, y1 + 5.5, h / 2], scale([0.5, 0.5, 1], keyhole())),
+      translate([x2, y2 + 5.5, h / 2], scale([0.5, 0.5, 1], keyhole()))
+    );
   }
 
   const keychainBbox = measureBoundingBox(keychain);
 
   return union(
-    subtract(
-      k2 === undefined ? union(honeycomb, k1) : union(honeycomb, k1, k2),
-      holes
-    ),
+    holes ? subtract(union(honeycomb, k1, k2), holes) : honeycomb,
     translate(
       [
         bbox[0][0] + (bbox[1][0] - bbox[0][0]) / 2,
