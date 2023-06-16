@@ -29,5 +29,6 @@
 <style>
   svg {
     position: absolute;
+    margin: 1rem;
   }
 </style>

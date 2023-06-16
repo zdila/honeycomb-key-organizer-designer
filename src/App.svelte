@@ -1,17 +1,13 @@
 <script lang="ts">
-  import Cell from "./Cell.svelte";
+  import Design from "./Design.svelte";
   import Preview from "./Preview.svelte";
   import stlSerializer from "@jscad/stl-serializer";
   import { saveAs } from "file-saver";
-
   import * as models from "./demo-model";
   import { honeycomb } from "./honeycomb.js";
   import type { Geom3 } from "@jscad/modeling/src/geometries/types";
-
   import Tab, { Label as TabLabel } from "@smui/tab";
   import TabBar from "@smui/tab-bar";
-  import SegmentedButton, { Segment } from "@smui/segmented-button";
-  import { Label } from "@smui/common";
   import Textfield from "@smui/textfield";
   import HelperText from "@smui/textfield/helper-text";
   import Paper from "@smui/paper";
@@ -19,19 +15,9 @@
   import { transforms } from "@jscad/modeling";
   import Button, { Label as ButtonLabel } from "@smui/button";
 
-  // let model = Array(20)
-  //   .fill()
-  //   .map(() =>
-  //     Array(30)
-  //       .fill()
-  //       .map(() => 0)
-  //   );
-
   let model: number[][] = structuredClone(models.small);
 
-  let active = "Design";
-
-  let selected = "vacant";
+  let active = "About";
 
   let cellSize = 30;
 
@@ -47,8 +33,6 @@
 
   let keyholeVerticalOffset = 0;
 
-  const choices = ["clear", "hole", "vacant", "capped"];
-
   $: value = JSON.stringify({
     model,
     cellSize,
@@ -60,7 +44,7 @@
     keyholeVerticalOffset,
   });
 
-  function handleChange(e) {
+  function handleChange(e: CustomEvent) {
     ({
       model,
       cellSize,
@@ -70,7 +54,7 @@
       inset,
       keyholeHorizontalDistanceOffset,
       keyholeVerticalOffset,
-    } = JSON.parse(e.target.value));
+    } = JSON.parse((e.target as HTMLTextAreaElement).value));
   }
 
   function download() {
@@ -122,7 +106,7 @@
 </Fab>
 
 <TabBar
-  tabs={["Parameters", "Design", "Preview", "Load/Save", "About"]}
+  tabs={["About", "Parameters", "Design", "Preview", "Load/Save"]}
   let:tab
   bind:active
 >
@@ -131,27 +115,36 @@
   </Tab>
 </TabBar>
 
-{#if active === "Design"}
-  <SegmentedButton
-    segments={choices}
-    let:segment
-    singleSelect
-    bind:selected
-    style="margin: 1rem 0 0 1rem"
-  >
-    <!-- Note: the `segment` property is required! -->
-    <Segment {segment}>
-      <Label>{segment}</Label>
-    </Segment>
-  </SegmentedButton>
+{#if active === "About"}
+  <Paper variant="unelevated">
+    <h1 class="mdc-typography--headline4">Honeycomb Key Organizer Designer</h1>
 
-  <main>
-    {#each model as row, y}
-      {#each row as value, x}
-        <Cell {x} {y} mode={choices.indexOf(selected)} bind:value />
-      {/each}
-    {/each}
-  </main>
+    <p class="mdc-typography--body1">
+      Inspired by different <a
+        href="https://www.printables.com/model/12877-honeycomb-key-organizer"
+        >honeycomb key organizer</a
+      >.
+    </p>
+
+    <p class="mdc-typography--body1">
+      More details at <a
+        href="https://www.printables.com/model/506546-customizable-honeycomb-key-organizer"
+        >Printables.com model page</a
+      >.
+    </p>
+
+    <p class="mdc-typography--body1">
+      <a href="https://github.com/zdila/honeycomb-key-organizer-designer">
+        Source code is on GitHub.
+      </a>
+    </p>
+
+    <p class="mdc-typography--body1">
+      Author: <a href="mailto:m.zdila@gmail.com">Martin Ždila</a>
+    </p>
+  </Paper>
+{:else if active === "Design"}
+  <Design bind:model />
 {:else if active === "Parameters"}
   <Paper variant="unelevated" class="settings">
     <Textfield
@@ -226,18 +219,7 @@
   </Paper>
 {/if}
 
-<header>
-  <section />
-</header>
-
 <style>
-  main {
-    position: relative;
-    margin-top: 1rem;
-    height: 100%;
-    overflow: auto;
-  }
-
   :global(.save-area > span) {
     width: 100%;
   }
