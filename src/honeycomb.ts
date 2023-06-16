@@ -1,6 +1,7 @@
 import { primitives, booleans, transforms, extrusions } from "@jscad/modeling";
 import type { Geom3 } from "@jscad/modeling/src/geometries/types";
-import { rotateZ } from "@jscad/modeling/src/operations/transforms";
+import { measureBoundingBox } from "@jscad/modeling/src/measurements";
+import { rectangle } from "@jscad/modeling/src/primitives";
 
 const { rotateY, rotate, scale, translate, translateY, translateZ, rotateX } =
   transforms;
@@ -12,18 +13,27 @@ const { cuboid, cylinder, polygon, roundedRectangle, torus } = primitives;
 const { extrudeLinear } = extrusions;
 
 function roundedHexagon(size: number, height: number, radius: number) {
+  const roundRadius = Math.min(
+    radius,
+    size / 2 - 0.00001,
+    height / 2 - 0.00001
+  );
+
   return [0, 1, 2]
     .map((i) =>
       rotateY(
         (i * Math.PI) / 3,
         translateZ(
-          radius - size,
+          -roundRadius - size,
           extrudeLinear(
-            { height: (size - radius) * 2 },
-            roundedRectangle({
-              size: [size, height],
-              roundRadius: radius,
-            })
+            { height: (size + roundRadius) * 2 },
+            roundRadius > 0
+              ? roundedRectangle({
+                  size: [size, height],
+                  roundRadius,
+                  segments: 64,
+                })
+              : rectangle({ size: [size, height] })
           )
         )
       )
@@ -49,22 +59,35 @@ function hexagon(size: number, height: number) {
   );
 }
 
-function fullCell(
+function cellInfill(
   size: number,
   height: number,
   thickness: number,
-  radius: number
+  radius: number,
+  inset: number,
+  standalone = false
 ) {
-  return subtract(
-    translateZ(
-      height / 2 - thickness / 8, // instead of thickness export separate parameter
-      rotate(
-        [Math.PI / 2, 0, Math.PI / 6],
-        roundedHexagon((size - thickness) * 0.8658, height, radius)
+  const a = translateZ(
+    height / 2 - (standalone ? inset / 2 + thickness / 2 : inset), // inset; instead of thickness export separate parameter
+    rotate(
+      [Math.PI / 2, 0, Math.PI / 6],
+      roundedHexagon(
+        size * 0.8658 - 0.1 /* space */,
+        height - (standalone ? thickness + inset : 0),
+        radius
       )
-    ),
-    translateZ(-height / 2 + thickness/2, cuboid({ size: [size, size, height] }))
+    )
   );
+
+  return standalone
+    ? a
+    : subtract(
+        a,
+        translateZ(
+          thickness - height / 2,
+          cuboid({ size: [size, size, height] })
+        )
+      );
 }
 
 function cell(
@@ -72,17 +95,20 @@ function cell(
   height: number,
   thickness: number,
   radius: number,
+  inset: number,
   mode: number
 ) {
   const a = subtract(
-    hexagon(size, height),
+    hexagon(size + thickness * 2, height),
     translateZ(
-      mode === 1 ? -thickness : thickness / 2,
-      hexagon(size - thickness, height + thickness * 2)
+      mode === 1 ? -0.0001 : thickness,
+      hexagon(size, height + thickness * 4)
     )
   );
 
-  return mode === 3 ? union(a, fullCell(size, height, thickness, radius)) : a;
+  return mode === 3
+    ? union(a, cellInfill(size, height, thickness, radius, inset))
+    : a;
 }
 
 const h = 7;
@@ -117,14 +143,14 @@ function keyhole() {
 
 export function honeycomb(
   rows: number[][],
-  s: number,
+  size: number,
   thickness: number,
   height: number,
   radius: number,
-  keyholeCoords: [[number, number], [number, number]] | undefined
+  inset: number,
+  keyholeHorizontalDistanceOffset: number,
+  keyholeVerticalOffset: number
 ) {
-  const size = s + thickness / 2;
-
   const parts: Geom3[] = [];
 
   for (let y = 0; y < rows.length; y++) {
@@ -135,49 +161,83 @@ export function honeycomb(
         continue;
       }
 
-      const ratio = size - thickness / 2;
-
       parts.push(
         translate(
           [
-            0.75 * x * ratio,
-            Math.sqrt(3) * 0.5 * ratio * ((x % 2) * 0.5 + y),
+            0.75 * x * (size + thickness),
+            Math.sqrt(3) * 0.5 * (size + thickness) * ((x % 2) * 0.5 + y),
             0,
           ],
-          cell(size, height, thickness, radius, style)
+          cell(size, height, thickness, radius, inset, style)
         )
       );
     }
   }
 
-  return union(
-    subtract(
-      union(
-        ...parts,
-        translate(
-          [...keyholeCoords[0], h / 2],
-          scale([0.5, 0.5, 1], keyhole_box())
-        ),
-        translate(
-          [...keyholeCoords[1], h / 2],
-          scale([0.5, 0.5, 1], keyhole_box())
-        )
-      ),
-      union(
-        translate(
-          [...keyholeCoords[0], h / 2],
-          scale([0.5, 0.5, 1], keyhole())
-        ),
-        translate([...keyholeCoords[1], h / 2], scale([0.5, 0.5, 1], keyhole()))
-      )
-    ),
-    fullCell(size, height, thickness, radius),
+  const keychain = union(
+    cellInfill(size, height, thickness, radius, inset, true),
     translateZ(
-      height + 1.5,
+      height - thickness - inset + 1.5,
       rotateX(
         Math.PI / 2,
-        torus({ innerRadius: 1.5, outerRadius: 5 })
+        torus({
+          innerRadius: 1.5,
+          outerRadius: 5,
+          outerSegments: 128,
+          innerSegments: 64,
+        })
       )
+    )
+  );
+
+  const honeycomb = union(parts);
+
+  const bbox = measureBoundingBox(honeycomb);
+
+  let k1: Geom3 | undefined = undefined;
+  let k2: Geom3 | undefined = undefined;
+  let holes: Geom3 | undefined = undefined;
+
+  if (!isNaN(keyholeVerticalOffset)) {
+    const x1 = isNaN(keyholeHorizontalDistanceOffset)
+      ? (bbox[0][0] + bbox[1][0]) / 2
+      : (bbox[0][0] + bbox[1][0]) / 4 - keyholeHorizontalDistanceOffset / 2;
+
+    const x2 = isNaN(keyholeHorizontalDistanceOffset)
+      ? undefined
+      : (bbox[0][0] + bbox[1][0]) * (3 / 4) +
+        keyholeHorizontalDistanceOffset / 2;
+
+    const y = (bbox[0][1] + bbox[1][1]) / 2 + keyholeVerticalOffset;
+
+    k1 = translate([x1, y, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
+
+    k2 =
+      x2 === undefined
+        ? undefined
+        : translate([x2, y, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
+
+    const h1 = translate([x1, y, h / 2], scale([0.5, 0.5, 1], keyhole()));
+
+    holes =
+      x2 === undefined
+        ? h1
+        : union(h1, translate([x2, y, h / 2], scale([0.5, 0.5, 1], keyhole())));
+  }
+
+  const keychainBbox = measureBoundingBox(keychain);
+
+  return union(
+    subtract(
+      k2 === undefined ? union(honeycomb, k1) : union(honeycomb, k1, k2),
+      holes
+    ),
+    translate(
+      [
+        (bbox[1][0] - bbox[0][0]) / 2,
+        bbox[0][1] - (keychainBbox[1][1] - keychainBbox[0][1]) * (3 / 2),
+      ],
+      keychain
     )
   );
 }

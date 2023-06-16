@@ -17,7 +17,7 @@
   import Paper from "@smui/paper";
   import Fab, { Icon } from "@smui/fab";
   import { transforms } from "@jscad/modeling";
-  import Button, { Label as ButtonLabel } from '@smui/button';
+  import Button, { Label as ButtonLabel } from "@smui/button";
 
   // let model = Array(20)
   //   .fill()
@@ -33,20 +33,21 @@
 
   let selected = "vacant";
 
-  let cellSize = 17.3;
+  let cellSize = 30;
 
-  let wallWidth = 4.5;
+  let wallWidth = 2.25;
 
   let height = 22;
 
   let radius = 1.5;
 
-  let kc1x = 90.8;
-  let kc1y = 120;
-  let kc2x = 246.5;
-  let kc2y = 120;
+  let inset = 1;
 
-  const choices = ["clear", "hole", "vacant", "occupied"];
+  let keyholeHorizontalDistanceOffset = 0;
+
+  let keyholeVerticalOffset = 0;
+
+  const choices = ["clear", "hole", "vacant", "capped"];
 
   $: value = JSON.stringify({
     model,
@@ -54,15 +55,22 @@
     wallWidth,
     height,
     radius,
-    kc1x,
-    kc1y,
-    kc2x,
-    kc2y,
+    inset,
+    keyholeHorizontalDistanceOffset,
+    keyholeVerticalOffset,
   });
 
   function handleChange(e) {
-    ({ model, cellSize, wallWidth, height, radius, kc1x, kc1y, kc2x, kc2y } =
-      JSON.parse(e.target.value));
+    ({
+      model,
+      cellSize,
+      wallWidth,
+      height,
+      radius,
+      inset,
+      keyholeHorizontalDistanceOffset,
+      keyholeVerticalOffset,
+    } = JSON.parse(e.target.value));
   }
 
   function download() {
@@ -88,23 +96,20 @@
   function makeModel() {
     return honeycomb(
       model,
-      cellSize,
+      cellSize / 2,
       wallWidth,
       height,
       radius,
-      kc1x && kc1y && kc2x && kc2y
-        ? [
-            [kc1x, kc1y],
-            [kc2x, kc2y],
-          ]
-        : undefined
+      inset,
+      keyholeHorizontalDistanceOffset,
+      keyholeVerticalOffset
     );
   }
 
   function loadModel(template: number[][]) {
     return () => {
       model = structuredClone(template);
-    }
+    };
   }
 </script>
 
@@ -117,7 +122,7 @@
 </Fab>
 
 <TabBar
-  tabs={["Parameters", "Design", "Preview", "Load/Save"]}
+  tabs={["Parameters", "Design", "Preview", "Load/Save", "About"]}
   let:tab
   bind:active
 >
@@ -148,8 +153,13 @@
     {/each}
   </main>
 {:else if active === "Parameters"}
-  <Paper variant="unelevated">
-    <Textfield label="Cell size" type="number" min="0" bind:value={cellSize} />
+  <Paper variant="unelevated" class="settings">
+    <Textfield
+      label="Inner cell perimeter"
+      type="number"
+      min="0"
+      bind:value={cellSize}
+    />
 
     <Textfield
       label="Wall width"
@@ -158,21 +168,23 @@
       bind:value={wallWidth}
     />
 
-    <Textfield label="Height" type="number" min="0" bind:value={height} />
+    <Textfield label="Depth" type="number" min="0" bind:value={height} />
 
     <Textfield label="Cap radius" type="number" min="0" bind:value={radius} />
 
-    <div class="mdc-typography--subtitle1" style="margin-top: 1rem">
-      Wall mount holes
-    </div>
+    <Textfield label="Cap inset" type="number" min="0" bind:value={inset} />
 
-    <Textfield label="X1" type="number" min="0" bind:value={kc1x} />
+    <Textfield
+      label="Wall mount holes horiz. dist. offset"
+      type="number"
+      bind:value={keyholeHorizontalDistanceOffset}
+    />
 
-    <Textfield label="Y1" type="number" min="0" bind:value={kc1y} />
-
-    <Textfield label="X2" type="number" min="0" bind:value={kc2x} />
-
-    <Textfield label="Y2" type="number" min="0" bind:value={kc2y} />
+    <Textfield
+      label="Wall mount holes vertical offset"
+      type="number"
+      bind:value={keyholeVerticalOffset}
+    />
   </Paper>
 {:else if active === "Preview"}
   {#if previewModel}<Preview model={previewModel} />{/if}
@@ -196,13 +208,21 @@
       Load model
     </div>
 
-    <Button><ButtonLabel on:click={loadModel(models.clear)}>Clear</ButtonLabel></Button>
+    <Button>
+      <ButtonLabel on:click={loadModel(models.clear)}>Clear</ButtonLabel>
+    </Button>
 
-    <Button><ButtonLabel on:click={loadModel(models.small)}>Small</ButtonLabel></Button>
+    <Button>
+      <ButtonLabel on:click={loadModel(models.small)}>Small</ButtonLabel>
+    </Button>
 
-    <Button><ButtonLabel on:click={loadModel(models.big)}>Big</ButtonLabel></Button>
+    <Button>
+      <ButtonLabel on:click={loadModel(models.big)}>Big</ButtonLabel>
+    </Button>
 
-    <Button><ButtonLabel on:click={loadModel(models.sun)}>Sun</ButtonLabel></Button>
+    <Button>
+      <ButtonLabel on:click={loadModel(models.sun)}>Sun</ButtonLabel>
+    </Button>
   </Paper>
 {/if}
 
@@ -220,5 +240,11 @@
 
   :global(.save-area > span) {
     width: 100%;
+  }
+
+  :global(.settings) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 </style>

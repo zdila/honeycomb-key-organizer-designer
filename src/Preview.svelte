@@ -17,7 +17,6 @@
 
   const perspectiveCamera = cameras.perspective;
 
-
   const orbitControls = controls.orbit;
 
   const state = {
