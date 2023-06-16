@@ -45,17 +45,31 @@
     keyholeVerticalOffset,
   });
 
+  $: {
+    localStorage.setItem("state", value);
+  }
+
+  load(localStorage.getItem("state"));
+
+  function load(data: any) {
+    try {
+      ({
+        model,
+        cellSize,
+        wallWidth,
+        height,
+        radius,
+        inset,
+        keyholeHorizontalDistanceOffset,
+        keyholeVerticalOffset,
+      } = JSON.parse(data));
+    } catch {
+      // ignore
+    }
+  }
+
   function handleChange(e: CustomEvent) {
-    ({
-      model,
-      cellSize,
-      wallWidth,
-      height,
-      radius,
-      inset,
-      keyholeHorizontalDistanceOffset,
-      keyholeVerticalOffset,
-    } = JSON.parse((e.target as HTMLTextAreaElement).value));
+    load((e.target as HTMLTextAreaElement).value);
   }
 
   function download() {
