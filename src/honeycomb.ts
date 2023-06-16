@@ -236,7 +236,7 @@ export function honeycomb(
     ),
     translate(
       [
-        (bbox[1][0] - bbox[0][0]) / 2,
+        bbox[0][0] + (bbox[1][0] - bbox[0][0]) / 2,
         bbox[0][1] - (keychainBbox[1][1] - keychainBbox[0][1]) * (3 / 2),
       ],
       keychain
