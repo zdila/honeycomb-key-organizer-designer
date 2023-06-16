@@ -1,6 +1,7 @@
 <script lang="ts">
   import Design from "./Design.svelte";
   import Preview from "./Preview.svelte";
+  import About from "./About.svelte";
   import stlSerializer from "@jscad/stl-serializer";
   import { saveAs } from "file-saver";
   import * as models from "./demo-model";
@@ -116,33 +117,7 @@
 </TabBar>
 
 {#if active === "About"}
-  <Paper variant="unelevated">
-    <h1 class="mdc-typography--headline4">Honeycomb Key Organizer Designer</h1>
-
-    <p class="mdc-typography--body1">
-      Inspired by different <a
-        href="https://www.printables.com/model/12877-honeycomb-key-organizer"
-        >honeycomb key organizer</a
-      >.
-    </p>
-
-    <p class="mdc-typography--body1">
-      More details at <a
-        href="https://www.printables.com/model/506546-customizable-honeycomb-key-organizer"
-        >Printables.com model page</a
-      >.
-    </p>
-
-    <p class="mdc-typography--body1">
-      <a href="https://github.com/zdila/honeycomb-key-organizer-designer">
-        Source code is on GitHub.
-      </a>
-    </p>
-
-    <p class="mdc-typography--body1">
-      Author: <a href="mailto:m.zdila@gmail.com">Martin Ždila</a>
-    </p>
-  </Paper>
+  <About />
 {:else if active === "Design"}
   <Design bind:model />
 {:else if active === "Parameters"}
