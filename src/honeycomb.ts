@@ -199,14 +199,16 @@ export function honeycomb(
   let holes: Geom3 | undefined = undefined;
 
   if (!isNaN(keyholeVerticalOffset)) {
+    const d =
+      (bbox[1][0] - bbox[0][0]) / 4 - keyholeHorizontalDistanceOffset / 2;
+
     const x1 = isNaN(keyholeHorizontalDistanceOffset)
       ? (bbox[0][0] + bbox[1][0]) / 2
-      : (bbox[0][0] + bbox[1][0]) / 4 - keyholeHorizontalDistanceOffset / 2;
+      : bbox[0][0] + d;
 
     const x2 = isNaN(keyholeHorizontalDistanceOffset)
       ? undefined
-      : (bbox[0][0] + bbox[1][0]) * (3 / 4) +
-        keyholeHorizontalDistanceOffset / 2;
+      : bbox[1][0] - d;
 
     const y = (bbox[0][1] + bbox[1][1]) / 2 + keyholeVerticalOffset;
 

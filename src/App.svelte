@@ -198,7 +198,7 @@
     </Textfield>
 
     <div class="mdc-typography--subtitle1" style="margin-top: 1rem">
-      Load model
+      Load predefined model
     </div>
 
     <Button>
