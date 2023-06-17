@@ -72,7 +72,7 @@ function cellInfill(
     rotate(
       [Math.PI / 2, 0, Math.PI / 6],
       roundedHexagon(
-        size * 0.8658 - 0.1 /* space */,
+        size * 0.8658 - (standalone ? 0.5 /* space */ : 0),
         height - (standalone ? thickness + inset : 0),
         radius
       )
