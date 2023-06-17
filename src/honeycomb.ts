@@ -179,12 +179,12 @@ export function honeycomb(
   const keychain = union(
     cellInfill(size, height, thickness, radius, inset, true),
     translateZ(
-      height - thickness - inset + 1.5,
+      height - thickness - inset + 1,
       rotateX(
         Math.PI / 2,
         torus({
           innerRadius: 1.5,
-          outerRadius: 5,
+          outerRadius: 3.5,
           outerSegments: 128,
           innerSegments: 64,
         })
