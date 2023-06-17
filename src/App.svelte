@@ -15,6 +15,8 @@
   import Fab, { Icon } from "@smui/fab";
   import { transforms } from "@jscad/modeling";
   import Button, { Label as ButtonLabel } from "@smui/button";
+  import Switch from "@smui/switch";
+  import FormField from "@smui/form-field";
 
   let model: number[][] = structuredClone(models.small.model);
 
@@ -38,6 +40,8 @@
 
   let keyholeVerticalOffset = 0;
 
+  let holesEnabled = true;
+
   $: value = JSON.stringify({
     model,
     cellSize,
@@ -49,6 +53,7 @@
     keyholeHorizontalOffset,
     keyholeVerticalSpace,
     keyholeVerticalOffset,
+    holesEnabled,
   });
 
   $: {
@@ -69,6 +74,7 @@
       keyholeHorizontalOffset = keyholeHorizontalOffset,
       keyholeVerticalSpace = keyholeVerticalSpace,
       keyholeVerticalOffset = keyholeVerticalOffset,
+      holesEnabled = holesEnabled,
     } = structuredClone(data));
   }
 
@@ -112,10 +118,10 @@
       height,
       radius,
       inset,
-      keyholeHorizontalSpace,
-      keyholeHorizontalOffset,
-      keyholeVerticalSpace,
-      keyholeVerticalOffset
+      holesEnabled ? keyholeHorizontalSpace : undefined,
+      holesEnabled ? keyholeHorizontalOffset : undefined,
+      holesEnabled ? keyholeVerticalSpace : undefined,
+      holesEnabled ? keyholeVerticalOffset : undefined
     );
   }
 
@@ -124,12 +130,15 @@
       loadFromObject(structuredClone(template) as models.State);
     };
   }
+
+  $: noModel = model.flat().every((a) => a === 0);
 </script>
 
 <Fab
   color="primary"
   style="position: fixed; right: 1rem; bottom: 1rem; z-index: 1"
   on:click={download}
+  disabled={noModel}
 >
   <Icon class="material-icons">download</Icon>
 </Fab>
@@ -139,7 +148,7 @@
   let:tab
   bind:active
 >
-  <Tab {tab}>
+  <Tab {tab} disabled={tab === "Preview" && noModel}>
     <TabLabel>{tab}</TabLabel>
   </Tab>
 </TabBar>
@@ -150,12 +159,7 @@
   <Design bind:model />
 {:else if active === "Parameters"}
   <Paper variant="unelevated" class="settings">
-    <Textfield
-      label="Inner cell perimeter"
-      type="number"
-      min="0"
-      bind:value={cellSize}
-    />
+    <Textfield label="Depth" type="number" min="0" bind:value={height} />
 
     <Textfield
       label="Wall width"
@@ -164,20 +168,29 @@
       bind:value={wallWidth}
     />
 
-    <Textfield label="Depth" type="number" min="0" bind:value={height} />
+    <Textfield
+      label="Inner cell perimeter"
+      type="number"
+      min="0"
+      bind:value={cellSize}
+    />
 
     <Textfield label="Cap radius" type="number" min="0" bind:value={radius} />
 
     <Textfield label="Cap inset" type="number" min="0" bind:value={inset} />
 
-    <div class="wrap" />
-
-    <div class="mdc-typography--body1 wrap">Wall mount holes</div>
+    <div class="wrap">
+      <FormField>
+        <Switch bind:checked={holesEnabled} />
+        <span slot="label">Wall mount holes</span>
+      </FormField>
+    </div>
 
     <Textfield
       label="Horizontal space"
       type="number"
       bind:value={keyholeHorizontalSpace}
+      disabled={!holesEnabled}
     >
       <Icon class="material-icons" slot="trailingIcon">percent</Icon>
     </Textfield>
@@ -186,12 +199,14 @@
       label="Horizontal offset"
       type="number"
       bind:value={keyholeHorizontalOffset}
+      disabled={!holesEnabled}
     />
 
     <Textfield
       label="Vertical space"
       type="number"
       bind:value={keyholeVerticalSpace}
+      disabled={!holesEnabled}
     >
       <Icon class="material-icons" slot="trailingIcon">percent</Icon>
     </Textfield>
@@ -200,6 +215,7 @@
       label="Vertical offset"
       type="number"
       bind:value={keyholeVerticalOffset}
+      disabled={!holesEnabled}
     />
   </Paper>
 {:else if active === "Preview"}
