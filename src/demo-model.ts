@@ -1,14 +1,15 @@
 export type State = {
-  model: number[][],
-  cellSize:number,
-  wallWidth:number,
-  height:number,
-  radius:number,
-  inset:number,
-  keyholeHorizontalSpace:number,
-  keyholeHorizontalOffset:number,
-  keyholeVerticalSpace:number,
-  keyholeVerticalOffset:number,
+  model: number[][];
+  cellSize: number;
+  wallWidth: number;
+  height: number;
+  radius: number;
+  inset: number;
+  keyholeHorizontalSpace: number;
+  keyholeHorizontalOffset: number;
+  keyholeVerticalSpace: number;
+  keyholeVerticalOffset: number;
+  holesEnabled: boolean;
 }
 
 export const small: State = {
@@ -43,6 +44,7 @@ export const small: State = {
   keyholeHorizontalOffset: 0,
   keyholeVerticalSpace: 0,
   keyholeVerticalOffset: 0,
+  holesEnabled: true,
 }
 
 
@@ -78,6 +80,7 @@ export const big: State = {
   keyholeHorizontalOffset: 0,
   keyholeVerticalSpace: 0,
   keyholeVerticalOffset: 0,
+  holesEnabled: true,
 };
 
 export const snake: State = {
@@ -112,4 +115,5 @@ export const snake: State = {
   keyholeHorizontalOffset: 0,
   keyholeVerticalSpace: -31,
   keyholeVerticalOffset: 10,
+  holesEnabled: true,
 };
