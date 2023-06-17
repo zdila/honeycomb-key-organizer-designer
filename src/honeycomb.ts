@@ -1,6 +1,7 @@
 import { primitives, booleans, transforms, extrusions } from "@jscad/modeling";
 import type { Geom3 } from "@jscad/modeling/src/geometries/types";
 import { measureBoundingBox } from "@jscad/modeling/src/measurements";
+import { rotateZ } from "@jscad/modeling/src/operations/transforms";
 import { rectangle } from "@jscad/modeling/src/primitives";
 
 const { rotateY, rotate, scale, translate, translateY, translateZ, rotateX } =
@@ -116,18 +117,18 @@ const h = 7;
 function keyhole_box() {
   const m = 2;
 
-  return union(
+  return rotateZ(Math.PI, union(
     cylinder({ height: h, radius: 10 + m }),
     translateY(-20, cylinder({ height: h, radius: 10 + m })),
     translateY(-10, cuboid({ size: [20 + 2 * m, 20, h] }))
-  );
+  ));
 }
 
 function keyhole() {
   const hh = 6;
   const d = 1.5;
 
-  return union(
+  return rotateZ(Math.PI, union(
     // big outer hole
     translate([0, 0, -d], cylinder({ height: hh + d, radius: 10 })),
     // big inner hole
@@ -138,7 +139,7 @@ function keyhole() {
     translate([0, -10, -2 * d], cuboid({ size: [10, 20, hh] })),
     // big inner space
     translate([0, -10, 0], cuboid({ size: [20, 20, hh - d] }))
-  );
+  ));
 }
 
 export function honeycomb(
@@ -222,13 +223,13 @@ export function honeycomb(
 
     const y2 = bbox[1][1] - dy + keyholeVerticalOffset;
 
-    k1 = translate([x1, y1 + 5.5, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
+    k1 = translate([x1, y1 - 5.0, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
 
-    k2 = translate([x2, y2 + 5.5, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
+    k2 = translate([x2, y2 - 5.0, h / 2], scale([0.5, 0.5, 1], keyhole_box()));
 
     holes = union(
-      translate([x1, y1 + 5.5, h / 2], scale([0.5, 0.5, 1], keyhole())),
-      translate([x2, y2 + 5.5, h / 2], scale([0.5, 0.5, 1], keyhole()))
+      translate([x1, y1 - 5.0, h / 2], scale([0.5, 0.5, 1], keyhole())),
+      translate([x2, y2 - 5.0, h / 2], scale([0.5, 0.5, 1], keyhole()))
     );
   }
 
