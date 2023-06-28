@@ -1,21 +1,22 @@
-<script>
-  export let x;
-  export let y;
-  export let value;
-  export let mode;
+<script lang="ts">
+  export let x: number;
+  export let y: number;
+  export let value: number;
+  export let mode: number;
+  export let cellsRotated: boolean;
 
-  $: left = x * 72.7;
-  $: top = (19 - y) * 83.5 + (x % 2 ? 0 : 41.7);
+  $: left = cellsRotated ? x * 260 + (y % 2 ? 130 : 0) : x * 225;
+  $: top = cellsRotated ? y * 225 : y * 260 + (x % 2 ? 130 : 0);
 
-  function handleClick() {
-    value = mode;
+  function handleClick(e: MouseEvent) {
+    value = e.shiftKey ? 0 : mode;
   }
 </script>
 
-<svg
-  width="50"
-  viewBox="-5 15 310 290"
-  style="left: {left / 2}; top: {top / 2}; z-index: {value ? 1 : 0}"
+<g
+  transform={`translate(${left} ${top})${
+    cellsRotated ? " rotate(30 155 155)" : ""
+  }`}
 >
   <polygon
     points="300,150 225,280 75,280 0,150 75,20 225,20"
@@ -24,11 +25,18 @@
     stroke={value ? "black" : "silver"}
     stroke-width={value ? 10 : 2}
   />
-</svg>
 
-<style>
-  svg {
-    position: absolute;
-    margin: 1rem;
+  <!-- role="button"
+    tabindex="0"
+    on:keypress={handleClick} -->
+</g>
+
+<!-- <style>
+  polygon {
+    outline: 0;
   }
-</style>
+
+  polygon:focus {
+    fill: aqua;
+  }
+</style> -->

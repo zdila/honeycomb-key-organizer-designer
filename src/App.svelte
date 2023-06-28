@@ -42,6 +42,8 @@
 
   let holesEnabled = true;
 
+  let cellsRotated = false;
+
   $: value = JSON.stringify({
     model,
     cellSize,
@@ -54,6 +56,7 @@
     keyholeVerticalSpace,
     keyholeVerticalOffset,
     holesEnabled,
+    cellsRotated
   });
 
   $: {
@@ -75,6 +78,7 @@
       keyholeVerticalSpace = keyholeVerticalSpace,
       keyholeVerticalOffset = keyholeVerticalOffset,
       holesEnabled = holesEnabled,
+      cellsRotated = cellsRotated,
     } = structuredClone(data));
   }
 
@@ -113,6 +117,7 @@
   function makeModel() {
     return honeycomb(
       model,
+      cellsRotated,
       cellSize / 2,
       wallWidth,
       height,
@@ -156,9 +161,16 @@
 {#if active === "About"}
   <About />
 {:else if active === "Design"}
-  <Design bind:model />
+  <Design bind:model {cellsRotated} />
 {:else if active === "Parameters"}
   <Paper variant="unelevated" class="settings">
+    <div class="wrap">
+      <FormField>
+        <Switch bind:checked={cellsRotated} />
+        <span slot="label">Rotate cells 30°</span>
+      </FormField>
+    </div>
+
     <Textfield label="Depth" type="number" min="0" bind:value={height} />
 
     <Textfield

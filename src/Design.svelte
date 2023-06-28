@@ -2,10 +2,11 @@
   import Cell from "./Cell.svelte";
   import SegmentedButton, { Segment } from "@smui/segmented-button";
   import { Label } from "@smui/common";
-  import Paper from "@smui/paper";
   import Button, { Label as ButtonLabel } from "@smui/button";
 
   export let model: number[][];
+
+  export let cellsRotated = false;
 
   let selected = "vacant";
 
@@ -18,6 +19,10 @@
         .map(() => Array(30).fill(0));
     }
   }
+
+  let width = (model[0].length * (cellsRotated ? 260 : 225) + 180 + 10) / 6;
+
+  let height = (model.length * (cellsRotated ? 225 : 260) + 180 + 10) / 6;
 </script>
 
 <div class="toolbar">
@@ -33,13 +38,29 @@
   >
 </div>
 
-<Paper variant="unelevated" class="design">
-  {#each model as row, y}
-    {#each row as value, x}
-      <Cell {x} {y} mode={choices.indexOf(selected)} bind:value />
+<!-- width={(model[0].length * (cellsRotated ? 260 : 225) + 180 + 10) / 6} -->
+<svg
+  style="width: {width}px; min-width: {width}px; min-height: {height}px; height: {height}px"
+  viewBox={cellsRotated
+    ? `-10 -10 ${model[0].length * 260 + 180} ${model.length * 225 + 100}`
+    : `-10 -10 ${model[0].length * 225 + 100} ${model.length * 260 + 180}`}
+>
+  {#each [true, false] as clear}
+    {#each model as row, y}
+      {#each row as value, x}
+        {#if !value === clear}
+          <Cell
+            {x}
+            {y}
+            mode={choices.indexOf(selected)}
+            bind:value
+            {cellsRotated}
+          />
+        {/if}
+      {/each}
     {/each}
   {/each}
-</Paper>
+</svg>
 
 <style>
   :global(.design) {
@@ -54,5 +75,11 @@
     gap: 1rem;
     align-items: center;
     margin: 1rem 0 0 1rem;
+  }
+
+  svg {
+    margin: 1rem;
+    /* border: 1px solid red; */
+    transform: scaleY(-1);
   }
 </style>

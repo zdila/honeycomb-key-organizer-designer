@@ -117,33 +117,40 @@ const h = 7;
 function keyhole_box() {
   const m = 2;
 
-  return rotateZ(Math.PI, union(
-    cylinder({ height: h, radius: 10 + m }),
-    translateY(-20, cylinder({ height: h, radius: 10 + m })),
-    translateY(-10, cuboid({ size: [20 + 2 * m, 20, h] }))
-  ));
+  return rotateZ(
+    Math.PI,
+    union(
+      cylinder({ height: h, radius: 10 + m }),
+      translateY(-20, cylinder({ height: h, radius: 10 + m })),
+      translateY(-10, cuboid({ size: [20 + 2 * m, 20, h] }))
+    )
+  );
 }
 
 function keyhole() {
   const hh = 6;
   const d = 1.5;
 
-  return rotateZ(Math.PI, union(
-    // big outer hole
-    translate([0, 0, -d], cylinder({ height: hh + d, radius: 10 })),
-    // big inner hole
-    translate([0, -20, 0], cylinder({ height: hh - d, radius: 10 })),
-    // small inner hole
-    translate([0, -20, -2 * d], cylinder({ height: 2 * d, radius: 5 })),
-    // small outer space
-    translate([0, -10, -2 * d], cuboid({ size: [10, 20, hh] })),
-    // big inner space
-    translate([0, -10, 0], cuboid({ size: [20, 20, hh - d] }))
-  ));
+  return rotateZ(
+    Math.PI,
+    union(
+      // big outer hole
+      translate([0, 0, -d], cylinder({ height: hh + d, radius: 10 })),
+      // big inner hole
+      translate([0, -20, 0], cylinder({ height: hh - d, radius: 10 })),
+      // small inner hole
+      translate([0, -20, -2 * d], cylinder({ height: 2 * d, radius: 5 })),
+      // small outer space
+      translate([0, -10, -2 * d], cuboid({ size: [10, 20, hh] })),
+      // big inner space
+      translate([0, -10, 0], cuboid({ size: [20, 20, hh - d] }))
+    )
+  );
 }
 
 export function honeycomb(
   rows: number[][],
+  cellsRotated: boolean,
   size: number,
   thickness: number,
   height: number,
@@ -164,21 +171,31 @@ export function honeycomb(
         continue;
       }
 
+      const c = cell(size, height, thickness, radius, inset, style);
+
       parts.push(
         translate(
-          [
-            0.75 * x * (size + thickness),
-            Math.sqrt(3) * 0.5 * (size + thickness) * ((x % 2) * 0.5 + y),
-            0,
-          ],
-          cell(size, height, thickness, radius, inset, style)
+          cellsRotated
+            ? [
+                Math.sqrt(3) * 0.5 * (size + thickness) * ((y % 2) * 0.5 + x),
+                0.75 * y * (size + thickness),
+                0,
+              ]
+            : [
+                0.75 * x * (size + thickness),
+                Math.sqrt(3) * 0.5 * (size + thickness) * ((x % 2) * 0.5 + y),
+                0,
+              ],
+          cellsRotated ? rotateZ(Math.PI / 6, c) : c
         )
       );
     }
   }
 
+  const c = cellInfill(size, height, thickness, radius, inset, true);
+
   const keychain = union(
-    cellInfill(size, height, thickness, radius, inset, true),
+    cellsRotated ? rotateZ(Math.PI / 6, c) : c,
     translateZ(
       height - thickness - inset + 1,
       rotateX(
